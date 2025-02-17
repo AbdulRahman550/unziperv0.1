@@ -215,7 +215,7 @@ async def queue_worker():
 @app.on_message(filters.document)
 async def handle_documents(client, message: Message):
     """Handle incoming documents"""
-    if not message.document.file_name.lower().endswith(('.rar', '.7z')):
+    if not message.document.file_name.lower().endswith(('.rar', '.7z', '.zip')):
         await message.reply_text("❌ Unsupported format! Send RAR/7Z files only.")
         return
 
