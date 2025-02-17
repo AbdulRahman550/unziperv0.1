@@ -29,7 +29,7 @@ API_HASH = os.getenv("API_HASH", "b3a147834fd9d39e52e48221988c3702")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "7514240817:AAGItz8eiGbzKYVHA7N5gVy6OdeKrk9nLtU")
 DOWNLOAD_LOCATION = "./downloads/"
 DECRYPTED_LOCATION = "./decrypted/"
-DEFAULT_PASSWORD = os.getenv("DEFAULT_PASSWORD", "ee")
+DEFAULT_PASSWORD = os.getenv("DEFAULT_PASSWORD", "Telegram MEQIQU")
 
 # Create directories
 os.makedirs(DOWNLOAD_LOCATION, exist_ok=True)
