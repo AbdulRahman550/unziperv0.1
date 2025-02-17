@@ -9,12 +9,12 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Install official RAR tools (supports passwords)
-RUN wget https://www.rarlab.com/rar/rarlinux-x64-6.2.1.tar.gz && \
-    tar -xvf rarlinux-x64-6.2.1.tar.gz && \
+RUN wget https://www.rarlab.com/rar/rarlinux-x64-710.tar.gz && \
+    tar -xvf rarlinux-x64-710.tar.gz && \
     cd rar && \
     cp rar unrar /usr/local/bin/ && \
     cd .. && \
-    rm -rf rar rarlinux-x64-6.2.1.tar.gz
+    rm -rf rar rarlinux-x64-710.tar.gz
 
 # Environment variables (use Docker secrets in production)
 ENV API_ID="29728224" \
