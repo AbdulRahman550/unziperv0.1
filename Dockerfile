@@ -1,15 +1,19 @@
+# Use the official Python image from the Docker Hub
 FROM python:3.9-slim
 
-RUN apt-get update && apt-get install -y \
+# Install required system packages with non-free repository
+RUN apt-get update && \
+    apt-get install -y \
     p7zip-full \
-    unrar \
+    unrar-free \  # Use unrar-free instead of unrar
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-ENV API_ID="29728224"
-ENV API_HASH="b3a147834fd9d39e52e48221988c3702"
-ENV BOT_TOKEN="7514240817:AAGItz8eiGbzKYVHA7N5gVy6OdeKrk9nLtU"
-ENV DEFAULT_PASSWORD="ee"
+# Environment variables (consider using docker secrets instead)
+ENV API_ID="29728224" \
+    API_HASH="b3a147834fd9d39e52e48221988c3702" \
+    BOT_TOKEN="7514240817:AAGItz8eiGbzKYVHA7N5gVy6OdeKrk9nLtU" \
+    DEFAULT_PASSWORD="Telegram MEQIQU"
 
 WORKDIR /app
 COPY . /app
