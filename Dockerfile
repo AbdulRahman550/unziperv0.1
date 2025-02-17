@@ -1,15 +1,22 @@
 FROM python:3.9-slim
 
-# Enable non-free repos and install proper unrar
-RUN sed -i 's/main/main non-free/' /etc/apt/sources.list && \
-    apt-get update && \
+# Install base dependencies
+RUN apt-get update && \
     apt-get install -y \
+    wget \
     p7zip-full \
-    unrar \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# Environment variables (consider using Docker secrets instead)
+# Install official RAR tools (supports passwords)
+RUN wget https://www.rarlab.com/rar/rarlinux-x64-6.2.1.tar.gz && \
+    tar -xvf rarlinux-x64-6.2.1.tar.gz && \
+    cd rar && \
+    cp rar unrar /usr/local/bin/ && \
+    cd .. && \
+    rm -rf rar rarlinux-x64-6.2.1.tar.gz
+
+# Environment variables (use Docker secrets in production)
 ENV API_ID="29728224" \
     API_HASH="b3a147834fd9d39e52e48221988c3702" \
     BOT_TOKEN="7514240817:AAGItz8eiGbzKYVHA7N5gVy6OdeKrk9nLtU" \
