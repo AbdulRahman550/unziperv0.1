@@ -20,7 +20,7 @@ RUN wget https://www.rarlab.com/rar/rarlinux-x64-6.2.1.tar.gz && \
 ENV API_ID="29728224" \
     API_HASH="b3a147834fd9d39e52e48221988c3702" \
     BOT_TOKEN="7514240817:AAGItz8eiGbzKYVHA7N5gVy6OdeKrk9nLtU" \
-    DEFAULT_PASSWORD="ee"
+    DEFAULT_PASSWORD="Telegram MEQIQU"
 
 WORKDIR /app
 COPY . /app
