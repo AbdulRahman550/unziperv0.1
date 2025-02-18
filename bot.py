@@ -94,7 +94,61 @@ def verify_ffmpeg() -> Tuple[bool, str]:
 
 FFMPEG_AVAILABLE, FFMPEG_VERSION = verify_ffmpeg()
 
-# Initialize Pyrogram client with error handling
+# Add QueueManager class before Bot class (after BotStats)
+class QueueManager:
+    def __init__(self, timeout=5):
+        self.pending_files = {}  # chat_id: [FileInfo]
+        self.timeout = timeout
+        self.locks = {}  # chat_id: Lock
+        
+    async def add_file(self, chat_id, file_info):
+        if chat_id not in self.locks:
+            self.locks[chat_id] = asyncio.Lock()
+            
+        async with self.locks[chat_id]:
+            if chat_id not in self.pending_files:
+                self.pending_files[chat_id] = []
+                # Schedule flush after timeout
+                asyncio.create_task(self.flush_queue(chat_id))
+            
+            self.pending_files[chat_id].append(file_info)
+            
+    async def flush_queue(self, chat_id):
+        await asyncio.sleep(self.timeout)
+        async with self.locks[chat_id]:
+            files = self.pending_files.pop(chat_id, [])
+            if not files:
+                return
+                
+            total_files = len(files)
+            if total_files == 1:
+                # Single file notification
+                file_info = files[0]
+                await file_info['message'].reply_text(
+                    f"📥 File added to queue\n"
+                    f"📁 File: {file_info['name']}\n"
+                    f"💾 Size: {human_readable_size(file_info['size'])}\n"
+                    f"🔄 Queue position: {file_info['position']}\n"
+                    f"⏱ Estimated wait time: {format_time(file_info['eta'])}"
+                )
+            else:
+                # Batch notification
+                first_file = files[0]
+                last_file = files[-1]
+                total_size = sum(f['size'] for f in files)
+                total_eta = last_file['eta']
+                
+                await first_file['message'].reply_text(
+                    f"📥 Batch Queue Update\n"
+                    f"📦 {total_files} files added to queue\n"
+                    f"📁 First: {first_file['name']}\n"
+                    f"📁 Last: {last_file['name']}\n"
+                    f"💾 Total Size: {human_readable_size(total_size)}\n"
+                    f"🔄 Queue positions: {first_file['position']} - {last_file['position']}\n"
+                    f"⏱ Total estimated wait time: {format_time(total_eta)}"
+                )
+
+# Now the Bot class can use QueueManager
 class Bot(Client):
     def __init__(self):
         super().__init__(
@@ -617,60 +671,6 @@ async def help_callback(client, callback_query):
     
     await callback_query.answer()
     await callback_query.message.edit_text(help_text)
-
-# Add this class after BotStats class
-class QueueManager:
-    def __init__(self, timeout=5):
-        self.pending_files = {}  # chat_id: [FileInfo]
-        self.timeout = timeout
-        self.locks = {}  # chat_id: Lock
-        
-    async def add_file(self, chat_id, file_info):
-        if chat_id not in self.locks:
-            self.locks[chat_id] = asyncio.Lock()
-            
-        async with self.locks[chat_id]:
-            if chat_id not in self.pending_files:
-                self.pending_files[chat_id] = []
-                # Schedule flush after timeout
-                asyncio.create_task(self.flush_queue(chat_id))
-            
-            self.pending_files[chat_id].append(file_info)
-            
-    async def flush_queue(self, chat_id):
-        await asyncio.sleep(self.timeout)
-        async with self.locks[chat_id]:
-            files = self.pending_files.pop(chat_id, [])
-            if not files:
-                return
-                
-            total_files = len(files)
-            if total_files == 1:
-                # Single file notification
-                file_info = files[0]
-                await file_info['message'].reply_text(
-                    f"📥 File added to queue\n"
-                    f"📁 File: {file_info['name']}\n"
-                    f"💾 Size: {human_readable_size(file_info['size'])}\n"
-                    f"🔄 Queue position: {file_info['position']}\n"
-                    f"⏱ Estimated wait time: {format_time(file_info['eta'])}"
-                )
-            else:
-                # Batch notification
-                first_file = files[0]
-                last_file = files[-1]
-                total_size = sum(f['size'] for f in files)
-                total_eta = last_file['eta']
-                
-                await first_file['message'].reply_text(
-                    f"📥 Batch Queue Update\n"
-                    f"📦 {total_files} files added to queue\n"
-                    f"📁 First: {first_file['name']}\n"
-                    f"📁 Last: {last_file['name']}\n"
-                    f"💾 Total Size: {human_readable_size(total_size)}\n"
-                    f"🔄 Queue positions: {first_file['position']} - {last_file['position']}\n"
-                    f"⏱ Total estimated wait time: {format_time(total_eta)}"
-                )
 
 if __name__ == "__main__":
     logger.info("Starting Enhanced Archive Decrypt Bot...")
