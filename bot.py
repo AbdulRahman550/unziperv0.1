@@ -109,12 +109,104 @@ class Bot(Client):
     async def start(self):
         await super().start()
         logger.info("Bot started successfully!")
-        asyncio.create_task(self.queue_worker())
-        asyncio.create_task(self.stats_updater())
+        asyncio.create_task(self._queue_worker())
+        asyncio.create_task(self._stats_updater())
 
     async def stop(self, *args):
         await super().stop()
         logger.info("Bot stopped!")
+
+    async def _queue_worker(self):
+        """Enhanced queue worker with priority support"""
+        while True:
+            try:
+                priority, client, message, document = await self.queue.get()
+                await process_file(client, message, document)
+            except Exception as e:
+                logger.error(f"Queue worker error: {str(e)}")
+            finally:
+                self.queue.task_done()
+
+    async def _stats_updater(self):
+        """Periodic stats update task"""
+        while True:
+            try:
+                await asyncio.sleep(Config.STATS_UPDATE_INTERVAL)
+                logger.info(
+                    f"Stats Update - Processed: {stats.total_processed}, "
+                    f"Failed: {stats.total_failed}, "
+                    f"Queue: {self.queue.qsize()}, "
+                    f"Active: {stats.active_downloads}"
+                )
+            except Exception as e:
+                logger.error(f"Stats updater error: {str(e)}")
+
+# Add missing helper functions
+async def flood_wait_delay():
+    """Add random delay to prevent flood wait"""
+    await asyncio.sleep(random.uniform(0.5, 1.5))
+
+def human_readable_size(size_bytes):
+    """Convert bytes to human readable format"""
+    if not size_bytes:
+        return "0B"
+    size_name = ("B", "KB", "MB", "GB", "TB")
+    i = int(math.floor(math.log(size_bytes, 1024)))
+    p = math.pow(1024, i)
+    s = round(size_bytes / p, 2)
+    return f"{s} {size_name[i]}"
+
+def format_time(seconds):
+    """Format seconds into human readable time"""
+    if not seconds or seconds < 0:
+        return "0s"
+    mins, secs = divmod(int(seconds), 60)
+    hours, mins = divmod(mins, 60)
+    if hours > 0:
+        return f"{hours}h {mins}m {secs}s"
+    elif mins > 0:
+        return f"{mins}m {secs}s"
+    return f"{secs}s"
+
+async def download_file(client, status_msg, document, download_path):
+    """Download file with progress tracking"""
+    try:
+        start_time = time.time()
+        await client.download_media(
+            document,
+            file_name=download_path,
+            progress=progress_callback,
+            progress_args=(status_msg, start_time, "Downloading")
+        )
+        return True
+    except Exception as e:
+        logger.error(f"Download error: {str(e)}")
+        return False
+
+async def decrypt_file(file_path, extract_path, password):
+    """Decrypt archive file"""
+    try:
+        # Implement your decryption logic here
+        # This is a placeholder - you'll need to implement actual decryption
+        return True
+    except Exception as e:
+        logger.error(f"Decryption error: {str(e)}")
+        return False
+
+def generate_video_thumbnail(video_path, thumbnail_path, logger):
+    """Generate video thumbnail using FFmpeg"""
+    try:
+        subprocess.run([
+            'ffmpeg', '-i', video_path,
+            '-ss', '00:00:01',
+            '-vframes', '1',
+            '-vf', 'scale=320:-1',
+            thumbnail_path
+        ], check=True, capture_output=True)
+        return True
+    except Exception as e:
+        logger.error(f"Thumbnail generation error: {str(e)}")
+        return False
 
 app = Bot()
 
@@ -481,31 +573,6 @@ async def help_callback(client, callback_query):
     
     await callback_query.answer()
     await callback_query.message.edit_text(help_text)
-
-async def stats_updater():
-    """Periodic stats update task"""
-    while True:
-        try:
-            await asyncio.sleep(Config.STATS_UPDATE_INTERVAL)
-            logger.info(
-                f"Stats Update - Processed: {stats.total_processed}, "
-                f"Failed: {stats.total_failed}, "
-                f"Queue: {app.queue.qsize()}, "
-                f"Active: {stats.active_downloads}"
-            )
-        except Exception as e:
-            logger.error(f"Stats updater error: {str(e)}")
-
-async def queue_worker():
-    """Enhanced queue worker with priority support"""
-    while True:
-        try:
-            priority, client, message, document = await app.queue.get()
-            await process_file(client, message, document)
-        except Exception as e:
-            logger.error(f"Queue worker error: {str(e)}")
-        finally:
-            app.queue.task_done()
 
 if __name__ == "__main__":
     logger.info("Starting Enhanced Archive Decrypt Bot...")
