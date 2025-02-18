@@ -529,15 +529,15 @@ async def handle_documents(client: Client, message: Message):
             return
 
         # Check concurrent downloads
-        user_id = message.from_user.id
-        if user_id in stats.current_tasks:
-            current_task = stats.current_tasks[user_id]
-            await message.reply_text(
-                "⚠️ You already have an active task!\n"
-                f"📝 Current task: {current_task}\n"
-                "Please wait for it to complete."
-            )
-            return
+        # user_id = message.from_user.id
+        # if user_id in stats.current_tasks:
+        #     current_task = stats.current_tasks[user_id]
+        #     await message.reply_text(
+        #         "⚠️ You already have an active task!\n"
+        #         f"📝 Current task: {current_task}\n"
+        #         "Please wait for it to complete."
+        #     )
+        #     return
 
         # Add to queue with priority for small files
         priority = 1 if document.file_size < 100 * 1024 * 1024 else 2  # Priority 1 for files < 100MB
