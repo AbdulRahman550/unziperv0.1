@@ -2,3 +2,6 @@ pyrogram
 aiohttp
 aiofiles
 tgcrypto
+patool
+unrar-cffi
+python-7zip
