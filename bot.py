@@ -44,7 +44,7 @@ class Config:
     MAX_FILE_SIZE = 20000 * 1024 * 1024  # 2GB
     ALLOWED_MIME_TYPES = ['application/x-rar-compressed', 'application/x-7z-compressed', 'application/zip']
     ADMIN_IDS = list(map(int, os.getenv("ADMIN_IDS", "5858127198").split(","))) if os.getenv("ADMIN_IDS") else []
-    MAX_CONCURRENT_DOWNLOADS = 1000
+    MAX_CONCURRENT_DOWNLOADS = 10000
     CHUNK_SIZE = 8192 * 1024  # 8MB chunks for download
     STATS_UPDATE_INTERVAL = 60  # Update stats every 60 seconds
 
@@ -325,7 +325,7 @@ def get_progress_bar(current: int, total: int, length: int = 20) -> str:
 async def progress_callback(current: int, total: int, message: Message, start_time: float, action: str):
     """Enhanced progress callback with ETA and speed calculation"""
     try:
-        if time.time() - progress_callback.last_update < 1:  # Update UI max once per second
+        if time.time() - progress_callback.last_update < 60:  # Update UI max once per second
             return
     except AttributeError:
         progress_callback.last_update = 0
