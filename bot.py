@@ -183,12 +183,53 @@ async def download_file(client, status_msg, document, download_path):
         logger.error(f"Download error: {str(e)}")
         return False
 
-async def decrypt_file(file_path, extract_path, password):
-    """Decrypt archive file"""
+# Add these new imports
+import subprocess
+import patoolib
+
+# Update decrypt_file function with proper archive extraction
+async def decrypt_file(file_path, output_dir, password):
+    """Decrypt RAR/7z/ZIP files with proper password handling"""
     try:
-        # Implement your decryption logic here
-        # This is a placeholder - you'll need to implement actual decryption
-        return True
+        logger.info(f"Starting decryption: {file_path}")
+        file_ext = file_path.lower()
+        
+        if file_ext.endswith('.rar'):
+            cmd = [
+                'unrar', 'x', '-idq',
+                '-p' + password,
+                file_path,
+                output_dir
+            ]
+            # Try unrar first
+            try:
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+                if result.returncode == 0:
+                    return True
+            except:
+                # Fallback to patool for RAR
+                patoolib.extract_archive(file_path, outdir=output_dir, password=password)
+                return True
+
+        elif file_ext.endswith(('.7z', '.zip')):
+            cmd = [
+                '7z', 'x',
+                f'-o{output_dir}',
+                f'-p{password}',
+                '-y',
+                file_path
+            ]
+            try:
+                result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+                if result.returncode == 0:
+                    return True
+            except:
+                # Fallback to patool for 7Z/ZIP
+                patoolib.extract_archive(file_path, outdir=output_dir, password=password)
+                return True
+
+        return False
+
     except Exception as e:
         logger.error(f"Decryption error: {str(e)}")
         return False
