@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 class Config:
     API_ID = os.getenv("API_ID", "29728224")
     API_HASH = os.getenv("API_HASH", "b3a147834fd9d39e52e48221988c3702")
-    BOT_TOKEN = os.getenv("BOT_TOKEN", "7514240817:AAGItz8eiGbzKYVHA7N5gVy6OdeKrk9nLtU")
+    BOT_TOKEN = os.getenv("BOT_TOKEN", "8363560526:AAHFlNRFiU7ofmnuYaEorJ73chYsdiJUBwk")
     DOWNLOAD_LOCATION = "./downloads/"
     DECRYPTED_LOCATION = "./decrypted/"
     DEFAULT_PASSWORD = os.getenv("DEFAULT_PASSWORD", "ee")
