@@ -19,7 +19,7 @@ RUN wget https://www.rarlab.com/rar/rarlinux-x64-710.tar.gz && \
 # Environment variables (use Docker secrets in production)
 ENV API_ID="29728224" \
     API_HASH="b3a147834fd9d39e52e48221988c3702" \
-    BOT_TOKEN="7514240817:AAGItz8eiGbzKYVHA7N5gVy6OdeKrk9nLtU" \
+    BOT_TOKEN="8363560526:AAHFlNRFiU7ofmnuYaEorJ73chYsdiJUBwk" \
     DEFAULT_PASSWORD="Telegram MEQIQU"
 
 WORKDIR /app
